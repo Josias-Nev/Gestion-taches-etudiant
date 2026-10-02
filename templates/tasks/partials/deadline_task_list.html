@@ -1,0 +1,16 @@
+{% if tasks %}
+<div class="task-stack">
+    {% for task in tasks %}
+    <a class="task-row {% if task.is_completed %}is-completed{% endif %} {% if task.is_overdue %}is-overdue{% endif %}" href="{% url 'tasks:detail' task.pk %}">
+        <span class="status-dot {{ task.status }}"></span>
+        <span class="task-main">
+            <strong>{{ task.title }}</strong>
+            <span class="muted">{{ task.subject.name|default:'Sans matière' }}{% if task.due_date %} · {{ task.due_date|date:'d F' }}{% endif %}{% if task.due_time %} · {{ task.due_time|time:'H:i' }}{% endif %}</span>
+        </span>
+        <span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state compact"><p>{{ empty }}</p></div>
+{% endif %}

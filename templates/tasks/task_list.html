@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Mes tâches — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Tâches</p>
+        <h1>Mes tâches</h1>
+        <p>Recherchez, filtrez, triez et organisez votre travail académique.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'tasks:create' %}">+ Nouvelle tâche</a>
+</section>
+
+<form method="get" class="card filter-card" novalidate>
+    {% if filter_form.non_field_errors %}
+    <div class="form-errors">{{ filter_form.non_field_errors }}</div>
+    {% endif %}
+    <div class="filter-grid">
+        <div class="form-group span-2"><label for="{{ filter_form.q.id_for_label }}">Recherche</label>{{ filter_form.q }}</div>
+        <div class="form-group"><label for="{{ filter_form.subject.id_for_label }}">Matière</label>{{ filter_form.subject }}</div>
+        <div class="form-group"><label for="{{ filter_form.status.id_for_label }}">Statut</label>{{ filter_form.status }}</div>
+        <div class="form-group"><label for="{{ filter_form.priority.id_for_label }}">Priorité</label>{{ filter_form.priority }}</div>
+        <div class="form-group"><label for="{{ filter_form.type.id_for_label }}">Type</label>{{ filter_form.type }}</div>
+        <div class="form-group"><label for="{{ filter_form.period.id_for_label }}">Période</label>{{ filter_form.period }}</div>
+        <div class="form-group"><label for="{{ filter_form.start_date.id_for_label }}">Début</label>{{ filter_form.start_date }}</div>
+        <div class="form-group"><label for="{{ filter_form.end_date.id_for_label }}">Fin</label>{{ filter_form.end_date }}</div>
+        <div class="form-group"><label for="{{ filter_form.sort.id_for_label }}">Trier par</label>{{ filter_form.sort }}</div>
+        <div class="form-group"><label for="{{ filter_form.view.id_for_label }}">Vue</label>{{ filter_form.view }}</div>
+    </div>
+    <div class="actions-row">
+        <button class="btn btn-primary" type="submit">Appliquer</button>
+        <a class="btn btn-secondary" href="{% url 'tasks:list' %}">Réinitialiser</a>
+    </div>
+</form>
+
+{% if current_view == 'kanban' %}
+<section class="kanban-board">
+    {% for column in grouped_tasks %}
+    <article class="kanban-column">
+        <header>
+            <h2>{{ column.label }}</h2>
+            <span>{{ column.tasks|length }}</span>
+        </header>
+        <div class="kanban-stack">
+            {% for task in column.tasks %}
+            <div class="kanban-card {% if task.is_overdue %}is-overdue{% endif %}">
+                <a href="{% url 'tasks:detail' task.pk %}"><strong>{{ task.title }}</strong></a>
+                <p>{{ task.subject.name|default:'Sans matière' }}</p>
+                <div class="meta-row">
+                    <span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span>
+                    {% if task.due_date %}<span>{{ task.due_date|date:'d M' }}</span>{% endif %}
+                </div>
+                <form method="post" action="{% url 'tasks:update_status' task.pk %}" class="status-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <select name="status" class="form-control compact-control" onchange="this.form.submit()" aria-label="Changer le statut">
+                        {% for value,label in status_choices %}
+                        <option value="{{ value }}" {% if value == task.status %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+            {% empty %}
+            <div class="empty-state compact"><p>Aucune tâche.</p></div>
+            {% endfor %}
+        </div>
+    </article>
+    {% endfor %}
+</section>
+{% else %}
+<section class="task-list">
+    {% for task in tasks %}
+    <article class="card task-card {% if task.is_completed %}is-completed{% endif %} {% if task.is_overdue %}is-overdue{% endif %}">
+        <div class="task-card-head">
+            <div>
+                <h2><a href="{% url 'tasks:detail' task.pk %}">{{ task.title }}</a></h2>
+                <p>{{ task.description|truncatechars:130|default:'Aucune description.' }}</p>
+            </div>
+            <span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span>
+        </div>
+        <div class="task-meta-grid">
+            <span>📚 {{ task.subject.name|default:'Sans matière' }}</span>
+            <span>🏷 {{ task.get_type_display }}</span>
+            <span>📌 {{ task.get_status_display }}</span>
+            <span>⏱ {{ task.estimated_duration|default:'0' }}h</span>
+            <span>📅 {% if task.due_date %}{{ task.due_date|date:'d F Y' }}{% else %}Sans échéance{% endif %}{% if task.due_time %} · {{ task.due_time|time:'H:i' }}{% endif %}</span>
+        </div>
+        {% if task.is_overdue %}<p class="overdue-text">⚠ Cette tâche est en retard.</p>{% endif %}
+        <div class="actions-row">
+            <form method="post" action="{% url 'tasks:toggle_complete' task.pk %}" class="inline-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button class="btn btn-secondary" type="submit">{% if task.is_completed %}Remettre en cours{% else %}Terminer{% endif %}</button>
+            </form>
+            <a class="btn btn-ghost" href="{% url 'tasks:edit' task.pk %}">Modifier</a>
+            <a class="btn btn-danger" href="{% url 'tasks:delete' task.pk %}">Supprimer</a>
+        </div>
+    </article>
+    {% empty %}
+    <div class="card empty-state">
+        <h2>Aucune tâche trouvée.</h2>
+        <p>Créez votre première tâche ou ajustez les filtres.</p>
+        <a class="btn btn-primary" href="{% url 'tasks:create' %}">Créer une tâche</a>
+    </div>
+    {% endfor %}
+</section>
+{% endif %}
+{% endblock %}

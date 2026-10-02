@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}{{ task.title }} — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Tâche</p>
+        <h1>{{ task.title }}</h1>
+        <p>{% if task.description %}{{ task.description }}{% else %}Aucune description détaillée.{% endif %}</p>
+    </div>
+    <div class="actions-row">
+        <form method="post" action="{% url 'tasks:toggle_complete' task.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button class="btn btn-primary" type="submit">{% if task.is_completed %}Remettre en cours{% else %}Marquer terminée{% endif %}</button>
+        </form>
+        <a class="btn btn-secondary" href="{% url 'tasks:edit' task.pk %}">Modifier</a>
+        <a class="btn btn-danger" href="{% url 'tasks:delete' task.pk %}">Supprimer</a>
+    </div>
+</section>
+
+<section class="grid two-columns">
+    <article class="card">
+        <h2>Détails</h2>
+        <dl class="details-list">
+            <div><dt>Matière</dt><dd>{% if task.subject %}<a href="{% url 'subjects:detail' task.subject.pk %}">{{ task.subject.name }}</a>{% else %}Sans matière{% endif %}</dd></div>
+            <div><dt>Type</dt><dd>{{ task.get_type_display }}</dd></div>
+            <div><dt>Priorité</dt><dd><span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span></dd></div>
+            <div><dt>Statut</dt><dd>{{ task.get_status_display }}</dd></div>
+            <div><dt>Échéance</dt><dd>{% if task.due_date %}{{ task.due_date|date:'d F Y' }}{% if task.due_time %} à {{ task.due_time|time:'H:i' }}{% endif %}{% else %}Non définie{% endif %}</dd></div>
+            <div><dt>Durée estimée</dt><dd>{{ task.estimated_duration|default:'0' }} heure{{ task.estimated_duration|pluralize }}</dd></div>
+            <div><dt>Créée le</dt><dd>{{ task.created_at|date:'d F Y H:i' }}</dd></div>
+            <div><dt>Terminée le</dt><dd>{{ task.completed_at|date:'d F Y H:i'|default:'Non terminée' }}</dd></div>
+        </dl>
+    </article>
+    <article class="card {% if task.is_overdue %}danger-soft{% endif %}">
+        <h2>État</h2>
+        {% if task.is_overdue %}
+        <p class="overdue-text">⚠ Cette tâche est en retard depuis le {{ task.due_date|date:'d F Y' }}.</p>
+        {% elif task.is_completed %}
+        <p class="success-text">✓ Cette tâche est terminée et son historique est conservé.</p>
+        {% elif task.is_due_today %}
+        <p class="warning-text">Cette tâche doit être traitée aujourd'hui.</p>
+        {% else %}
+        <p>Cette tâche est planifiée correctement.</p>
+        {% endif %}
+        <dl class="details-list">
+            <div><dt>Statut actuel</dt><dd>{{ task.get_status_display }}</dd></div>
+            <div><dt>Priorité</dt><dd>{{ task.get_priority_display }}</dd></div>
+            <div><dt>Échéance proche</dt><dd>{% if task.is_urgent %}Oui{% else %}Non{% endif %}</dd></div>
+        </dl>
+    </article>
+</section>
+{% endblock %}

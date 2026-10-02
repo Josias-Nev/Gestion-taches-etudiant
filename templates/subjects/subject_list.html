@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Matières — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Matières</p>
+        <h1>Mes matières</h1>
+        <p>Organisez vos tâches par cours, enseignant et couleur.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'subjects:create' %}">+ Ajouter une matière</a>
+</section>
+
+{% if subjects %}
+<section class="subject-grid">
+    {% for subject in subjects %}
+    <article class="card subject-card" style="--subject-color: {{ subject.color }}">
+        <div class="subject-color"></div>
+        <div class="subject-card-body">
+            <div class="section-title compact-title">
+                <div>
+                    <h2><a href="{% url 'subjects:detail' subject.pk %}">{{ subject.name }}</a></h2>
+                    <p>{{ subject.code|default:'Code non renseigné' }}</p>
+                </div>
+                <span class="badge neutral">{{ subject.total_tasks }} tâche{{ subject.total_tasks|pluralize }}</span>
+            </div>
+            <p class="muted">{{ subject.teacher|default:'Enseignant non renseigné' }}</p>
+            <div class="actions-row">
+                <a class="btn btn-secondary" href="{% url 'subjects:detail' subject.pk %}">Consulter</a>
+                <a class="btn btn-ghost" href="{% url 'subjects:edit' subject.pk %}">Modifier</a>
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+</section>
+{% else %}
+<div class="card empty-state">
+    <h2>Aucune matière pour le moment.</h2>
+    <p>Créez vos matières pour mieux classer vos devoirs, projets et révisions.</p>
+    <a class="btn btn-primary" href="{% url 'subjects:create' %}">Créer ma première matière</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Statistiques — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Statistiques</p>
+        <h1>Analyse de votre travail académique</h1>
+        <p>Tous les chiffres sont calculés à partir de vos données enregistrées.</p>
+    </div>
+</section>
+
+<section class="stats-grid">
+    <article class="stat-card"><span>Total</span><strong>{{ stats.total }}</strong><small>Tâches</small></article>
+    <article class="stat-card success"><span>Terminées</span><strong>{{ stats.completed }}</strong><small>Faites</small></article>
+    <article class="stat-card warning"><span>En cours</span><strong>{{ stats.in_progress }}</strong><small>Actives</small></article>
+    <article class="stat-card"><span>Restantes</span><strong>{{ stats.remaining }}</strong><small>À finir</small></article>
+    <article class="stat-card danger"><span>En retard</span><strong>{{ stats.overdue }}</strong><small>À traiter</small></article>
+</section>
+
+<section class="grid two-columns">
+    <article class="card">
+        <div class="section-title">
+            <div>
+                <p class="eyebrow">Réalisation</p>
+                <h2>Taux global</h2>
+            </div>
+            <strong>{{ stats.completion_rate }} %</strong>
+        </div>
+        <div class="progress-bar large"><span style="width: {{ stats.completion_rate }}%"></span></div>
+        <p class="muted">Tâches terminées / Total des tâches × 100.</p>
+    </article>
+    <article class="card">
+        <div class="section-title">
+            <div>
+                <p class="eyebrow">Semaine</p>
+                <h2>Progression et charge</h2>
+            </div>
+            <strong>{{ stats.week_progress }} %</strong>
+        </div>
+        <div class="progress-bar"><span style="width: {{ stats.week_progress }}%"></span></div>
+        <p class="muted">Charge estimée cette semaine : {{ stats.week_workload }}h.</p>
+    </article>
+</section>
+
+<section class="card">
+    <div class="section-title">
+        <div>
+            <p class="eyebrow">Évolution</p>
+            <h2>Tâches terminées sur 14 jours</h2>
+        </div>
+    </div>
+    <div class="chart-bars" aria-label="Graphique des tâches terminées">
+        {% for item in evolution %}
+        <div class="chart-bar-item">
+            <div class="chart-bar" style="height: {{ item.percent }}%" title="{{ item.count }} tâche(s)"></div>
+            <small>{{ item.date|date:'d/m' }}</small>
+            <span>{{ item.count }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="grid two-columns">
+    <article class="card">
+        <h2>Statistiques par matière</h2>
+        {% if subject_stats %}
+        <div class="subject-stats-list">
+            {% for subject in subject_stats %}
+            <div class="subject-stat-row" style="--subject-color: {{ subject.color }}">
+                <span class="color-dot"></span>
+                <div>
+                    <strong>{{ subject.name }}</strong>
+                    <small>{{ subject.total_tasks }} tâches · {{ subject.completed_tasks }} terminées · {{ subject.remaining_tasks }} restantes · {{ subject.overdue_tasks }} en retard</small>
+                </div>
+                <span>{{ subject.workload|default:0 }}h</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state compact"><p>Aucune matière enregistrée.</p></div>
+        {% endif %}
+    </article>
+    <article class="card">
+        <h2>Répartition par priorité</h2>
+        <div class="priority-list">
+            {% for item in priority_breakdown %}
+            <div class="mini-bar-row">
+                <span><i class="dot badge-{{ item.value }}"></i>{{ item.label }}</span>
+                <strong>{{ item.count }}</strong>
+            </div>
+            {% endfor %}
+        </div>
+    </article>
+</section>
+{% endblock %}

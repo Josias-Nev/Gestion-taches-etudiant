@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}{{ subject.name }} — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Matière</p>
+        <h1><span class="color-dot" style="background: {{ subject.color }}"></span>{{ subject.name }}</h1>
+        <p>{{ subject.description|default:'Aucune description.' }}</p>
+    </div>
+    <div class="actions-row">
+        <a class="btn btn-primary" href="{% url 'tasks:create' %}?subject={{ subject.pk }}">+ Tâche</a>
+        <a class="btn btn-secondary" href="{% url 'subjects:edit' subject.pk %}">Modifier</a>
+        <a class="btn btn-danger" href="{% url 'subjects:delete' subject.pk %}">Supprimer</a>
+    </div>
+</section>
+
+<section class="stats-grid compact-stats">
+    <article class="stat-card"><span>Total</span><strong>{{ stats.total }}</strong><small>Tâches</small></article>
+    <article class="stat-card success"><span>Terminées</span><strong>{{ stats.completed }}</strong><small>Faites</small></article>
+    <article class="stat-card warning"><span>Restantes</span><strong>{{ stats.remaining }}</strong><small>À faire</small></article>
+    <article class="stat-card danger"><span>En retard</span><strong>{{ stats.overdue }}</strong><small>Attention</small></article>
+</section>
+
+<section class="grid two-columns">
+    <article class="card">
+        <h2>Informations</h2>
+        <dl class="details-list">
+            <div><dt>Code</dt><dd>{{ subject.code|default:'Non renseigné' }}</dd></div>
+            <div><dt>Professeur</dt><dd>{{ subject.teacher|default:'Non renseigné' }}</dd></div>
+            <div><dt>Créée le</dt><dd>{{ subject.created_at|date:'d F Y' }}</dd></div>
+        </dl>
+    </article>
+    <article class="card">
+        <div class="section-title">
+            <h2>Tâches associées</h2>
+            <a href="{% url 'tasks:list' %}?subject={{ subject.pk }}">Filtrer</a>
+        </div>
+        {% if tasks %}
+        <div class="task-stack">
+            {% for task in tasks %}
+            <a class="task-row {% if task.is_completed %}is-completed{% endif %} {% if task.is_overdue %}is-overdue{% endif %}" href="{% url 'tasks:detail' task.pk %}">
+                <span class="status-dot {{ task.status }}"></span>
+                <span class="task-main"><strong>{{ task.title }}</strong><span class="muted">{{ task.get_type_display }} · {{ task.get_priority_display }}{% if task.due_date %} · {{ task.due_date|date:'d F' }}{% endif %}</span></span>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state compact"><p>Aucune tâche liée à cette matière.</p></div>
+        {% endif %}
+    </article>
+</section>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Emploi du temps — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Emploi du temps</p>
+        <h1>Planning hebdomadaire</h1>
+        <p>Vos cours sont indépendants des tâches, mais visibles depuis le dashboard.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'schedule:create' %}">+ Ajouter un créneau</a>
+</section>
+
+<section class="week-grid schedule-week">
+    {% for day_index, day in days.items %}
+    <article class="card week-day">
+        <header><strong>{{ day.label }}</strong><span>{{ day.entries|length }} cours</span></header>
+        {% if day.entries %}
+        <div class="schedule-stack">
+            {% for entry in day.entries %}
+            <div class="schedule-item">
+                <span>{{ entry.start_time|time:'H:i' }} — {{ entry.end_time|time:'H:i' }}</span>
+                <strong>{{ entry.subject.name|default:'Cours sans matière' }}</strong>
+                <small>{{ entry.room|default:'Salle non renseignée' }}{% if entry.teacher %} · {{ entry.teacher }}{% endif %}</small>
+                <div class="actions-row small-actions">
+                    <a href="{% url 'schedule:edit' entry.pk %}">Modifier</a>
+                    <a class="danger-link" href="{% url 'schedule:delete' entry.pk %}">Supprimer</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state compact"><p>Aucun cours.</p></div>
+        {% endif %}
+    </article>
+    {% endfor %}
+</section>
+{% endblock %}
