@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Calendrier — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Calendrier académique</p>
+        <h1>{{ current|date:'F Y'|capfirst }}</h1>
+        <p>Les jours contenant des tâches sont mis en évidence.</p>
+    </div>
+    <div class="actions-row">
+        <a class="btn btn-secondary" href="?year={{ previous_month.year }}&month={{ previous_month.month }}">← Mois précédent</a>
+        <a class="btn btn-ghost" href="{% url 'tasks:calendar' %}">Aujourd'hui</a>
+        <a class="btn btn-secondary" href="?year={{ next_month.year }}&month={{ next_month.month }}">Mois suivant →</a>
+    </div>
+</section>
+
+<section class="card calendar-card">
+    <div class="calendar-weekdays">
+        <span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span>
+    </div>
+    <div class="calendar-grid">
+        {% for week in weeks %}
+            {% for day in week %}
+            <a href="{{ day.url }}" class="calendar-day {% if not day.in_month %}muted-day{% endif %} {% if day.is_today %}today{% endif %} {% if day.tasks %}has-tasks{% endif %}">
+                <span class="day-number">{{ day.date.day }}</span>
+                {% if day.tasks %}
+                <span class="task-count">{{ day.tasks|length }} tâche{{ day.tasks|length|pluralize }}</span>
+                <span class="task-dots">
+                    {% for task in day.tasks|slice:':3' %}<i class="dot badge-{{ task.priority }}"></i>{% endfor %}
+                </span>
+                {% endif %}
+            </a>
+            {% endfor %}
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

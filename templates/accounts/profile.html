@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Profil — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Paramètres</p>
+        <h1>Mon profil</h1>
+        <p>Gérez vos informations personnelles de compte.</p>
+    </div>
+</section>
+<form method="post" class="card form-card narrow-card" novalidate>
+    {% csrf_token %}
+    {% include 'partials/form_fields.html' %}
+    <button class="btn btn-primary" type="submit">Enregistrer</button>
+</form>
+{% endblock %}

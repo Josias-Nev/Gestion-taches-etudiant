@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Ma semaine — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Ma semaine</p>
+        <h1>Du {{ week_start|date:'d F' }} au {{ week_end|date:'d F Y' }}</h1>
+        <p>Visualisez votre charge de travail et les cours de la semaine.</p>
+    </div>
+    <div class="actions-row">
+        <a class="btn btn-secondary" href="?date={{ previous_week|date:'Y-m-d' }}">← Semaine précédente</a>
+        <a class="btn btn-ghost" href="{% url 'tasks:week' %}">Cette semaine</a>
+        <a class="btn btn-secondary" href="?date={{ next_week|date:'Y-m-d' }}">Semaine suivante →</a>
+    </div>
+</section>
+
+<section class="grid two-columns">
+    <article class="card">
+        <div class="section-title">
+            <div>
+                <p class="eyebrow">Progression</p>
+                <h2>Réalisation hebdomadaire</h2>
+            </div>
+            <strong>{{ progress_rate }} %</strong>
+        </div>
+        <div class="progress-bar"><span style="width: {{ progress_rate }}%"></span></div>
+        <p class="muted">Calculé uniquement à partir des tâches réellement enregistrées pour cette semaine.</p>
+    </article>
+    <article class="card">
+        <div class="section-title">
+            <div>
+                <p class="eyebrow">Charge de travail</p>
+                <h2>Estimation</h2>
+            </div>
+            <strong>{{ total_duration }}h</strong>
+        </div>
+        {% if workload_by_subject or unassigned_total %}
+        <div class="mini-bars">
+            {% for item in workload_by_subject %}
+            <div class="mini-bar-row"><span>{{ item.subject.name }}</span><strong>{{ item.hours }}h</strong></div>
+            {% endfor %}
+            {% if unassigned_total %}<div class="mini-bar-row"><span>Sans matière</span><strong>{{ unassigned_total }}h</strong></div>{% endif %}
+        </div>
+        {% else %}
+        <p class="muted">Aucune durée estimée renseignée cette semaine.</p>
+        {% endif %}
+    </article>
+</section>
+
+<section class="week-grid">
+    {% for day, data in days.items %}
+    <article class="card week-day {% if day == today %}today-card{% endif %}">
+        <header>
+            <span>{{ data.name }}</span>
+            <strong>{{ day|date:'d M' }}</strong>
+        </header>
+        <p class="muted">{{ data.tasks|length }} tâche{{ data.tasks|length|pluralize }} · {{ data.total_duration }}h estimées</p>
+        {% if data.entries %}
+        <div class="schedule-stack compact-stack">
+            {% for entry in data.entries %}
+            <div class="schedule-item">
+                <span>{{ entry.start_time|time:'H:i' }} — {{ entry.end_time|time:'H:i' }}</span>
+                <strong>{{ entry.subject.name|default:'Cours' }}</strong>
+                <small>{{ entry.room|default:'Salle non renseignée' }}</small>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if data.tasks %}
+        <div class="task-stack compact-stack">
+            {% for task in data.tasks %}
+            <a class="task-row {% if task.is_completed %}is-completed{% endif %}" href="{% url 'tasks:detail' task.pk %}">
+                <span class="status-dot {{ task.status }}"></span>
+                <span class="task-main"><strong>{{ task.title }}</strong><span class="muted">{{ task.subject.name|default:'Sans matière' }}</span></span>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state compact"><p>Aucune tâche.</p></div>
+        {% endif %}
+    </article>
+    {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Échéances — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Échéances</p>
+        <h1>Priorisez vos prochaines dates limites</h1>
+        <p>Vue regroupée : aujourd'hui, demain, cette semaine et tâches en retard.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'tasks:create' %}">+ Nouvelle tâche</a>
+</section>
+
+<section class="deadline-grid">
+    <article class="card">
+        <h2>Aujourd'hui</h2>
+        {% include 'tasks/partials/deadline_task_list.html' with tasks=today_tasks empty='Aucune tâche à terminer aujourd’hui.' %}
+    </article>
+    <article class="card">
+        <h2>Demain</h2>
+        {% include 'tasks/partials/deadline_task_list.html' with tasks=tomorrow_tasks empty='Aucune échéance demain.' %}
+    </article>
+    <article class="card">
+        <h2>Cette semaine</h2>
+        {% include 'tasks/partials/deadline_task_list.html' with tasks=week_tasks empty='Aucune échéance cette semaine.' %}
+    </article>
+    <article class="card danger-soft" id="overdue">
+        <h2>⚠ Tâches en retard</h2>
+        {% if overdue_items %}
+        <div class="task-stack">
+            {% for item in overdue_items %}
+            <a class="task-row is-overdue" href="{% url 'tasks:detail' item.task.pk %}">
+                <span class="status-dot danger"></span>
+                <span class="task-main">
+                    <strong>{{ item.task.title }}</strong>
+                    <span class="muted">Échéance : {{ item.task.due_date|date:'d F' }} · Retard : {{ item.days_late }} jour{{ item.days_late|pluralize }}</span>
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state compact"><p>Aucune tâche en retard.</p></div>
+        {% endif %}
+    </article>
+</section>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Emploi du temps</p>
+        <h1>{{ title }}</h1>
+        <p>Ajoutez un cours récurrent dans votre planning hebdomadaire.</p>
+    </div>
+</section>
+<form method="post" class="card form-card" novalidate>
+    {% csrf_token %}
+    {% include 'partials/form_fields.html' %}
+    <div class="actions-row">
+        <button class="btn btn-primary" type="submit">Enregistrer</button>
+        <a class="btn btn-secondary" href="{% url 'schedule:list' %}">Annuler</a>
+    </div>
+</form>
+{% endblock %}

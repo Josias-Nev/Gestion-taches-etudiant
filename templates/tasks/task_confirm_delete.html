@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Supprimer {{ task.title }} — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Confirmation</p>
+        <h1>Supprimer la tâche</h1>
+        <p>Voulez-vous vraiment supprimer « {{ task.title }} » ? Cette action est irréversible.</p>
+    </div>
+</section>
+<form method="post" class="card form-card narrow-card">
+    {% csrf_token %}
+    <p>La tâche sera retirée des statistiques, du calendrier et des échéances.</p>
+    <div class="actions-row">
+        <button class="btn btn-danger" type="submit">Oui, supprimer</button>
+        <a class="btn btn-secondary" href="{% url 'tasks:detail' task.pk %}">Annuler</a>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Connexion — Study Task{% endblock %}
+{% block auth_content %}
+<section class="auth-card">
+    <div class="auth-hero">
+        <span class="brand-mark large">ST</span>
+        <h1>Bienvenue sur Study Task</h1>
+        <p>Connectez-vous pour retrouver votre dashboard académique personnel.</p>
+    </div>
+    <form method="post" class="card form-card" novalidate>
+        {% csrf_token %}
+        <h2>Connexion</h2>
+        {% include 'partials/form_fields.html' %}
+        <button class="btn btn-primary btn-block" type="submit">Se connecter</button>
+        <p class="form-footer">Pas encore de compte ? <a href="{% url 'accounts:register' %}">Créer un compte</a></p>
+    </form>
+</section>
+{% endblock %}

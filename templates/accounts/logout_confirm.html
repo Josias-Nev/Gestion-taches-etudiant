@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Déconnexion — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Session</p>
+        <h1>Déconnexion</h1>
+        <p>Voulez-vous vraiment quitter votre espace étudiant ?</p>
+    </div>
+</section>
+<div class="card form-card narrow-card">
+    <form method="post">
+        {% csrf_token %}
+        <div class="actions-row">
+            <button class="btn btn-danger" type="submit">Me déconnecter</button>
+            <a class="btn btn-secondary" href="{% url 'dashboard:index' %}">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

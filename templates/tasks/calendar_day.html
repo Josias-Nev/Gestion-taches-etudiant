@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}{{ selected_date|date:'d F Y' }} — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Calendrier</p>
+        <h1>{{ selected_date|date:'l d F Y'|capfirst }}</h1>
+        <p>Tâches prévues pour cette journée.</p>
+    </div>
+    <div class="actions-row">
+        <a class="btn btn-secondary" href="{% url 'tasks:calendar' %}?year={{ selected_date.year }}&month={{ selected_date.month }}">Retour au mois</a>
+        <a class="btn btn-primary" href="{% url 'tasks:create' %}">+ Nouvelle tâche</a>
+    </div>
+</section>
+<section class="card">
+    {% include 'tasks/partials/deadline_task_list.html' with tasks=tasks empty='Aucune tâche prévue ce jour.' %}
+</section>
+{% endblock %}

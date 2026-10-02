@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — Study Task{% endblock %}
+{% block content %}
+<section class="page-header dashboard-header">
+    <div>
+        <p class="eyebrow">Bonjour, {{ user.name }} 👋</p>
+        <h1>Voici ce qui vous attend aujourd'hui.</h1>
+        <p>{{ today|date:'l d F Y'|capfirst }}</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'tasks:create' %}">+ Nouvelle tâche</a>
+</section>
+
+<section class="stats-grid">
+    <article class="stat-card">
+        <span>À faire</span>
+        <strong>{{ stats.active_tasks }}</strong>
+        <small>Tâches non terminées</small>
+    </article>
+    <article class="stat-card success">
+        <span>Terminées</span>
+        <strong>{{ stats.completed_tasks }}</strong>
+        <small>Historique conservé</small>
+    </article>
+    <article class="stat-card warning">
+        <span>Urgentes</span>
+        <strong>{{ stats.urgent_tasks }}</strong>
+        <small>Priorité haute ou échéance proche</small>
+    </article>
+    <article class="stat-card danger">
+        <span>En retard</span>
+        <strong>{{ stats.overdue_tasks }}</strong>
+        <small>Tâches à traiter</small>
+    </article>
+</section>
+
+<section class="grid two-columns">
+    <article class="card">
+        <div class="section-title">
+            <div>
+                <p class="eyebrow">Aujourd'hui</p>
+                <h2>Mes tâches du jour</h2>
+            </div>
+            <a href="{% url 'tasks:list' %}?period=today">Tout voir</a>
+        </div>
+        {% if today_tasks %}
+        <div class="task-stack">
+            {% for task in today_tasks %}
+            <div class="task-row {% if task.is_completed %}is-completed{% endif %} {% if task.is_overdue %}is-overdue{% endif %}">
+                <form method="post" action="{% url 'tasks:toggle_complete' task.pk %}" class="inline-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button class="check-button" type="submit" aria-label="Basculer la tâche">{% if task.is_completed %}☑{% else %}☐{% endif %}</button>
+                </form>
+                <div class="task-main">
+                    <a href="{% url 'tasks:detail' task.pk %}"><strong>{{ task.title }}</strong></a>
+                    <span class="muted">{{ task.subject.name|default:'Sans matière' }} · {{ task.get_priority_display }}{% if task.due_time %} · {{ task.due_time|time:'H:i' }}{% endif %}</span>
+                </div>
+                <span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>Aucune tâche prévue aujourd'hui.</h3>
+            <p>Planifiez votre prochaine échéance pour mieux organiser votre journée.</p>
+            <a class="btn btn-secondary" href="{% url 'tasks:create' %}">Créer une tâche</a>
+        </div>
+        {% endif %}
+    </article>
+
+    <article class="card">
+        <div class="section-title">
+            <div>
+                <p class="eyebrow">Rappels</p>
+                <h2>Notifications utiles</h2>
+            </div>
+            <a href="{% url 'notifications:list' %}">Voir</a>
+        </div>
+        {% if reminders %}
+        <div class="notification-list">
+            {% for reminder in reminders %}
+            <div class="notification-item {{ reminder.type }}">
+                <strong>{{ reminder.title }}</strong>
+                <p>{{ reminder.message }}</p>
+                {% if reminder.task %}<a href="{% url 'tasks:detail' reminder.task.pk %}">Ouvrir la tâche</a>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state compact"><p>Aucun rappel important pour le moment.</p></div>
+        {% endif %}
+    </article>
+</section>
+
+<section class="grid two-columns">
+    <article class="card">
+        <div class="section-title">
+            <div>
+                <p class="eyebrow">Échéances</p>
+                <h2>À venir</h2>
+            </div>
+            <a href="{% url 'tasks:deadlines' %}">Toutes les échéances</a>
+        </div>
+        {% if upcoming_tasks %}
+        <div class="timeline-list">
+            {% for task in upcoming_tasks %}
+            <a class="timeline-item" href="{% url 'tasks:detail' task.pk %}">
+                <span class="date-pill">{{ task.due_date|date:'d M' }}</span>
+                <span><strong>{{ task.title }}</strong><small>{{ task.subject.name|default:'Sans matière' }}{% if task.due_time %} · {{ task.due_time|time:'H:i' }}{% endif %}</small></span>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state compact"><p>Aucune échéance prochaine.</p></div>
+        {% endif %}
+    </article>
+
+    <article class="card">
+        <div class="section-title">
+            <div>
+                <p class="eyebrow">Progression</p>
+                <h2>Semaine en cours</h2>
+            </div>
+            <a href="{% url 'analytics:statistics' %}">Stats</a>
+        </div>
+        <div class="progress-block">
+            <div class="progress-label"><span>Progression de la semaine</span><strong>{{ week_progress }} %</strong></div>
+            <div class="progress-bar"><span style="width: {{ week_progress }}%"></span></div>
+        </div>
+        {% if subject_load %}
+        <div class="mini-bars">
+            {% for item in subject_load %}
+            <div class="mini-bar-row">
+                <span>{{ item.subject__name|default:'Sans matière' }}</span>
+                <strong>{{ item.duration|default:0 }}h</strong>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </article>
+</section>
+
+<section class="grid two-columns">
+    <article class="card">
+        <div class="section-title">
+            <div>
+                <p class="eyebrow">Emploi du temps</p>
+                <h2>Cours du jour</h2>
+            </div>
+            <a href="{% url 'schedule:list' %}">Planning</a>
+        </div>
+        {% if today_schedule %}
+        <div class="schedule-stack">
+            {% for entry in today_schedule %}
+            <div class="schedule-item">
+                <span>{{ entry.start_time|time:'H:i' }} — {{ entry.end_time|time:'H:i' }}</span>
+                <strong>{{ entry.subject.name|default:'Cours' }}</strong>
+                <small>{{ entry.room|default:'Salle non renseignée' }}</small>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state compact"><p>Aucun cours enregistré aujourd'hui.</p></div>
+        {% endif %}
+    </article>
+
+    <article class="card danger-soft">
+        <div class="section-title">
+            <div>
+                <p class="eyebrow">Attention</p>
+                <h2>Tâches en retard</h2>
+            </div>
+            <a href="{% url 'tasks:deadlines' %}#overdue">Voir</a>
+        </div>
+        {% if overdue_tasks %}
+        <div class="task-stack">
+            {% for task in overdue_tasks %}
+            <a class="task-row" href="{% url 'tasks:detail' task.pk %}">
+                <span class="status-dot danger"></span>
+                <span class="task-main"><strong>{{ task.title }}</strong><span class="muted">Échéance : {{ task.due_date|date:'d F' }}</span></span>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state compact"><p>Aucune tâche en retard. Beau travail !</p></div>
+        {% endif %}
+    </article>
+</section>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Rappels — Study Task{% endblock %}
+{% block content %}
+<section class="page-header">
+    <div>
+        <p class="eyebrow">Notifications</p>
+        <h1>Rappels académiques</h1>
+        <p>Ces rappels sont calculés à partir de vos échéances réelles.</p>
+    </div>
+</section>
+
+<section class="grid two-columns">
+    <article class="card">
+        <h2>Rappels automatiques</h2>
+        {% if reminders %}
+        <div class="notification-list">
+            {% for reminder in reminders %}
+            <div class="notification-item {{ reminder.type }}">
+                <strong>{{ reminder.title }}</strong>
+                <p>{{ reminder.message }}</p>
+                {% if reminder.task %}<a href="{% url 'tasks:detail' reminder.task.pk %}">Ouvrir la tâche</a>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state compact"><p>Aucun rappel automatique pour le moment.</p></div>
+        {% endif %}
+    </article>
+
+    <article class="card">
+        <h2>Notifications enregistrées</h2>
+        {% if stored_notifications %}
+        <div class="notification-list">
+            {% for notification in stored_notifications %}
+            <div class="notification-item {% if notification.is_read %}neutral{% else %}info{% endif %}">
+                <strong>{{ notification.get_type_display }}</strong>
+                <p>{{ notification.message }}</p>
+                {% if notification.task %}<a href="{% url 'tasks:detail' notification.task.pk %}">Voir la tâche</a>{% endif %}
+                {% if not notification.is_read %}
+                <form method="post" action="{% url 'notifications:mark_read' notification.pk %}">
+                    {% csrf_token %}
+                    <button class="btn btn-secondary" type="submit">Marquer comme lue</button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state compact"><p>Aucune notification persistante.</p></div>
+        {% endif %}
+    </article>
+</section>
+{% endblock %}
